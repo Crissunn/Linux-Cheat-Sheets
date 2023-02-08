@@ -1,0 +1,79 @@
+###################################################
+#  Author Cristian Gomez
+#  Contact: https://www.linkedin.com/in/agcristian/
+###################################################
+
+---
+- name: Configure SSH
+  hosts: localhost
+  become: yes
+  vars:
+    names: "user1,user2"
+  tasks:
+
+    - name: Install Open-SSH Client and Server
+      apt:
+        name: 
+          - openssh-server
+          - openssh-client
+        state: present
+        update_cache: yes
+
+    - name: Start and enable SSH service
+      service:
+        name: ssh
+        state: started
+        enabled: yes
+
+    - name: Change SSH port
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#Port 22'
+        line: 'Port 2282'
+        state: present
+        
+    - name: Disable root login
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#PermitRootLogin prohibit-password'
+        line: 'PermitRootLogin no'
+        state: present
+
+    - name: Disable Password Authentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#PasswordAuthentication yes'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Add specified user to AllowUsers
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        line: "AllowUsers {{ names }}"
+        state: present
+        when: names is defined
+
+    - name: Change response time and ClientAliveCountMax
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#ClientAliveInterval 0'
+        line: 'ClientAliveInterval 300'
+        state: present
+
+    - name: Change ClientAliveCountMax
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^#ClientAliveCountMax 3'
+        line: 'ClientAliveCountMax 0'
+        state: present
+
+    - name: Change ChallengeResponseAuthentication
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        line: 'ChallengeResponseAuthentication no'
+        state: present
+
+    - name: Reload SSH
+      service:
+        name: ssh
+        state: reloaded
