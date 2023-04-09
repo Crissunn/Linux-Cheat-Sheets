@@ -40,9 +40,6 @@ if __name__ == "__main__":
         net_max = net_ms[5]
         net_min = net_ms[3].split('=')[1].strip()
 
-        print(net_max)
-        print(net_min)
-
         # CPU Info
         cpu_free = float(100 - float(cpu_usage)) 
 
